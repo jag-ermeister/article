@@ -60,7 +60,7 @@ It turns out that it is in the next record in Wireshark:
 
 ![outdated scan response](./outdated_scan_response.png)
 
-This next record's `Event Type` is `Scan Response` packet. This includes our Service UUID.
+This record's `Event Type` is `Scan Response` packet. This includes our Service UUID.
 
 So it turns out that the raw data that we received in nRF Connect is actually a combination of the data from the Advertising and Scan Response packets.
 
