@@ -1,7 +1,8 @@
-# iOS - Connecting to ANGi in the background
+# iOS - Connecting to a BLE peripheral in the background
 
 ## Use Case
 //TODO
+Our goal is to scan and connect to a BLE peripheral with the iOS app running in the background.  In this case that BLE peripheral is a smart sensor for a cycling helmet called ANGi.  The ANGi sensor will detect an impact and then the app will alert your emergency contacts of the accident with details about your location and when the crash occured.  The user might start their bike ride before the sensor has been enabled (shake to wake) so we would like our iOS app, the *Ride App by Specialized* to scan and connect to the ANGi if the app has been backgrounded by the user.
 
 ## Connecting to a device while the app is in the background
 //TODO
@@ -9,9 +10,25 @@ https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/
 
 ### Declare the correct background mode
 //TODO
+The "Uses Bluetooth LE accesories" background mode needs to be enabled in Xcode for your app to perform Bluetooth related tasks in the background.
+As stated by Apple:
+```
+While your app is in the background you can still discover and connect to peripherals, and explore and interact with peripheral data. In addition, the system wakes up your app when any of the CBCentralManagerDelegate or CBPeripheralDelegate delegate methods are invoked, allowing your app to handle important central role events, such as when a connection is established or torn down, when a peripheral sends updated characteristic values, and when a central manager’s state changes."
+```
 
 ### Scan for device by Service UUID
 //TODO
+
+The documentation states that applications are allowed to scan while backgrounded but the scan must specify the service types.  Passing nil to perform a wild card scan is not supported in the background.
+
+```
+public struct ImpactService {
+    public static let service = CBUUID(string: "AFD0FFA0-2A9E-41A9-B9DB-115A0E511DE4")
+}
+
+centralManager.scanForPeripherals(withServices: [ImpactService.service], options: scanOptions)
+```
+   
 
 ## It is not working.  Why not?
 
