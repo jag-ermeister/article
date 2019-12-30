@@ -1,4 +1,4 @@
-# iOS - Connecting to a BLE peripheral in the background
+# iOS - Scan and Connect to a BLE peripheral in the background
 
 ## Use Case
 Our goal is to scan and connect to a BLE peripheral with the iOS app running in the background.  In this case that BLE peripheral is a smart sensor for a cycling helmet called ANGi.  The ANGi sensor will detect an impact and then the app will alert your emergency contacts of the accident with details about your location and when the crash occured.  The user might start their bike ride before the sensor has been enabled (shake to wake) so we would like our iOS app, the *Ride App by Specialized* to scan and connect to the ANGi if the app has been backgrounded by the user.
