@@ -1,24 +1,24 @@
 # iOS - Scan and Connect to a BLE peripheral in the background
 
 ## Use Case
-Our goal is to scan and connect to a BLE peripheral with the iOS app running in the background.  In this case that BLE peripheral is a smart sensor for a cycling helmet called ANGi.  The ANGi sensor will detect an impact and then the app will alert your emergency contacts of the accident with details about your location and when the crash occured.  The user might start their bike ride before the sensor has been enabled (shake to wake) so we would like our iOS app, the *Ride App by Specialized* to scan and connect to the ANGi if the app has been backgrounded by the user.
+
+Our goal is to scan and connect to a BLE peripheral with an iOS app running in the background.  In this case that BLE peripheral is a smart sensor for a cycling helmet called ANGi.  The ANGi sensor will detect an impact and then the app will alert your emergency contacts of the accident with details about your location and when the crash occured.  The user might start their bike ride before the sensor has been enabled (shake to wake) so we would like our iOS app, the *Ride App by Specialized* to scan and connect to the ANGi if the app has been backgrounded by the user.
 
 More information about ANGi is available here:
 https://www.specialized.com/us/en/stories/angi
 
 ## Connecting to a device while the app is in the background
-//TODO
-https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html
+
+Apple's official introduction to Core Bluetooth background processing can be found [at this link](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html) and the developer documentation is [here](https://developer.apple.com/documentation/corebluetooth). The documentation states the an app that wishes to discover and connect to a BLE peripheral while in the background must declare the correct background mode and scan for the desired service by service UUID.
 
 ### Declare the correct background mode
-The "Uses Bluetooth LE accesories" background mode needs to be enabled in Xcode for your app to perform Bluetooth related tasks in the background.
-As stated by Apple:
+
+The "Uses Bluetooth LE accessories" background mode needs to be enabled in Xcode for your app to perform Bluetooth related tasks in the background. As stated by Apple:
 
 > While your app is in the background you can still discover and connect to peripherals, and explore and interact with 
 > peripheral data. In addition, the system wakes up your app when any of the CBCentralManagerDelegate or CBPeripheralDelegate 
 > delegate methods are invoked, allowing your app to handle important central role events, such as when a connection is
 > established or torn down, when a peripheral sends updated characteristic values, and when a central manager’s state changes."
-
 
 ### Scan for device by Service UUID
 
@@ -31,11 +31,10 @@ public struct ImpactService {
 
 centralManager.scanForPeripherals(withServices: [ImpactService.service], options: scanOptions)
 ```
-   
 
 ## It is not working.  Why not?
 
-//TODO - it is working in Android, but not iOS?
+We have followed Apple's suggestions that should enable us to discover our BLE peripheral while our app is in the background, but we are unable to discover the device.  This situation is especially interesting because our Android devs are able to accomplish this task. Is the problem with our iOS implementation or with the device? 
 
 ## Inspecting the advertisement data with nRF Connect
 
@@ -88,9 +87,11 @@ So it turns out that the raw data that we received in nRF Connect is actually a 
 
 This information helped us locate the [following Apple Developer post](https://forums.developer.apple.com/message/189093#189093) which describes some important undocumented behavior of iOS devices; iOS devices perform Active scanning while in the foreground and Passive scanning while in the background. [This page](http://dev.ti.com/tirex/content/simplelink_academy_cc2640r2sdk_1_12_01_16/modules/ble_scan_adv_basic/ble_scan_adv_basic.html) provides a good description of the difference between Active and Passive scanning:
 
-```
-When not connected, Bluetooth devices can either advertise their presence by transmitting advertisement packets or scan for nearby devices that are advertising. This process of scanning for devices is called device discovery. There are two types of scanning; active and passive. The difference is that an active scanner can send a scan request to request additional information from the advertiser, while a passive scanner can only receive data from advertising device. Note that the terms discovery and scanning may be used interchangeably. The figure below shows the sequence where the scanner sends a scan request to an advertiser during an advertising event.
-```
+> When not connected, Bluetooth devices can either advertise their presence by transmitting advertisement packets or scan for nearby
+> devices that are advertising. This process of scanning for devices is called device discovery. There are two types of scanning; active > and passive. The difference is that an active scanner can send a scan request to request additional information from the advertiser,
+> while a passive scanner can only receive data from advertising device. Note that the terms discovery and scanning may be used
+> interchangeably. The figure below shows the sequence where the scanner sends a scan request to an advertiser during an advertising 
+> event.
 
 In other words, while the iOS device is in the foreground and Actively scanning, it will receive Advertising packets, send out Scan Requests, and receive Scan Response packets. In the background, the iOS device will only receive Advertising packets. Since our ANGI's Service UUID is in the Scan Response, we finally have an explanation as to why we can discover other BLE devices while backgrounded but not our ANGi.
 
