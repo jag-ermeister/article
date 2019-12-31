@@ -65,11 +65,11 @@ Everything appears to look good. We are advertising our service UUID. So why can
 
 ## nRF Connect does not tell the whole story - digging into the packets
 
-Our lack of familiarity with the Bluetooth protocol was proving to be a limiting factor. Luckily, our firmware engineer had tools that he could use to look at the individual packets being exchanged between the Bluetooth central device (the phone) and the peripheral (the ANGi).  Ultimately he found that the Service UUID was not included in the advertisement packet, but in the Scan Response packet. Aha! This is a promising lead.
+Our lack of familiarity with the Bluetooth protocol is proving to be a limiting factor. Luckily, our firmware engineer has tools that he used to inspect the individual packets being exchanged between the Bluetooth central device (the phone) and the peripheral (the ANGi).  Ultimately he found that the Service UUID was not included in the Advertisement packet, but in the Scan Response packet. Aha! This is a promising lead.
 
-It is also possible to sniff the packets with a phone that has Android 4.4+ installed. For example, [this link](https://stackoverflow.com/questions/49287985/bluetooth-hci-snoop-log-not-generated-pixel-2/49287986) describes how to collect the data packets with a Google Pixel. In short, you must enable bluetooth logging and then kick off processes that utilize bluetooth - in our case, using nRF Connect to scan for our ANGi device. This generates a `btsnoop_hci.log` file that we can inspect with Wireshark. Let's take a look at what these advertisement packets look like with Wireshark.
+It is also possible to sniff the packets with a phone that has Android 4.4+ installed. For example, [this link](https://stackoverflow.com/questions/49287985/bluetooth-hci-snoop-log-not-generated-pixel-2/49287986) describes how to collect the data packets with a Google Pixel. In short, you must enable bluetooth logging and then kick off the bluetooth process that you would like to debug - in our case, using nRF Connect to scan for our ANGi device. This generates a `btsnoop_hci.log` file that we can inspect with Wireshark. Let's take a look at what the ANGi's advertisement packets look like with Wireshark.
 
-The phone collects quite a bit of data, so you will have to sift through it to find what you are looking for. We are looking for the advertisement data for our ANGi device. We find it at this packet here:
+The phone collects quite a bit of data, so we will have to sift through it to find what you are looking for. We are looking for the advertisement data for our ANGi device. We find it at this packet here:
 
 ![outdated advertising](./outdated_advertising.png)
 
