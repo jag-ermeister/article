@@ -2,14 +2,14 @@
 
 ## Use Case
 
-Our goal is to scan and connect to a BLE peripheral with an iOS app running in the background.  In this case that BLE peripheral is a smart sensor for a cycling helmet called ANGi.  The ANGi sensor will detect an impact and then the app will alert your emergency contacts of the accident with details about your location and when the crash occured.  The user might start their bike ride before the sensor has been enabled (shake to wake) so we would like our iOS app, the *Ride App by Specialized* to scan and connect to the ANGi if the app has been backgrounded by the user.
+Our goal is to scan and connect to a BLE peripheral with an iOS app running in the background.  In this case that BLE peripheral is a smart sensor for a cycling helmet called ANGi.  The ANGi sensor will detect an impact and then the app will alert your emergency contacts of the accident with details about your location and when the crash occured.  The user might start their bike ride before the sensor has been enabled (shake to wake) so we would like our iOS app, the [*Ride App by Specialized*](https://apps.apple.com/us/app/specialized-ride/id1374601630), to scan and connect to the ANGi if the app has been backgrounded by the user.
 
 More information about ANGi is available here:
 https://www.specialized.com/us/en/stories/angi
 
 ## Connecting to a device while the app is in the background
 
-Apple's official introduction to Core Bluetooth background processing can be found [at this link](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html) and the developer documentation is [here](https://developer.apple.com/documentation/corebluetooth). The documentation states the an app that wishes to discover and connect to a BLE peripheral while in the background must declare the correct background mode and scan for the desired service by service UUID.
+Apple's official introduction to Core Bluetooth background processing can be found [at this link](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html) and the developer documentation is [here](https://developer.apple.com/documentation/corebluetooth). The documentation states that an app that wishes to discover and connect to a BLE peripheral while in the background must declare the correct background mode and scan for the desired service by service UUID.
 
 ### Declare the correct background mode
 
@@ -67,9 +67,9 @@ Everything appears to look good. We are advertising our service UUID. So why can
 
 Our lack of familiarity with the Bluetooth protocol was proving to be a limiting factor. Luckily, our firmware engineer had tools that he could use to look at the individual packets being exchanged between the Bluetooth central device (the phone) and the peripheral (the ANGi).  Ultimately he found that the Service UUID was not included in the advertisement packet, but in the Scan Response packet. Aha! This is a promising lead.
 
-It is also possible to sniff the packets with a phone that has Android 4.4+ installed. For example, [this link](https://stackoverflow.com/questions/49287985/bluetooth-hci-snoop-log-not-generated-pixel-2/49287986) describes how to collect the data packets with a Google Pixel. This generates a `btsnoop_hci.log` file that we can use Wireshark to inspect. Let's take a look at what these advertisement packets look like with Wireshark.
+It is also possible to sniff the packets with a phone that has Android 4.4+ installed. For example, [this link](https://stackoverflow.com/questions/49287985/bluetooth-hci-snoop-log-not-generated-pixel-2/49287986) describes how to collect the data packets with a Google Pixel. In short, you must enable bluetooth logging and then kick off processes that utilize bluetooth - in our case, using nRF Connect to scan for our ANGi device. This generates a `btsnoop_hci.log` file that we can inspect with Wireshark. Let's take a look at what these advertisement packets look like with Wireshark.
 
-The phone collects quite a bit of data, so you will have to sift through it to find what you are looking for. We are looking for the advertisement data for our ANGi device. We find it at this record here:
+The phone collects quite a bit of data, so you will have to sift through it to find what you are looking for. We are looking for the advertisement data for our ANGi device. We find it at this packet here:
 
 ![outdated advertising](./outdated_advertising.png)
 
@@ -79,7 +79,7 @@ It turns out that it is in the next record in Wireshark:
 
 ![outdated scan response](./outdated_scan_response.png)
 
-This record's `Event Type` is `Scan Response` packet. This includes our Service UUID.
+This packet's `Event Type` is `Scan Response`. This includes our Service UUID.
 
 So it turns out that the raw data that we received in nRF Connect is actually a combination of the data from the Advertising and Scan Response packets.
 
@@ -102,7 +102,6 @@ So, it sounds like all we need to do is put our Service UUID in the advertisemen
 ```
 An advertising packet can be up to 31 bytes of data. Each field (i.e. appearance, name, service UUID or similar) have a header of 2 bytes (length and type), meaning that the maximum user payload is 29 bytes.
 ```
-
 So rather than just moving our Service UUID into the Advertising packet which already includes the Flags, Apperance, and Local Name, we decided to move the Service UUID into the Advertising packet and move the Local Name to the Scan Response.
 
 Once that change was made...it worked! We were now able to successfully connect to our device while our app was in the background.
@@ -123,6 +122,6 @@ And here is how the Scan Response data packet looks with the Device Name:
 
 ## In Summary
 
-//TODO - in addition to declaring the right background mode and scanning for the service UUID, the peripheral must advertisement the service in the ADV_IND packet since iOS performs passive scan in the background
+If you wish to discover a BLE peripheral while your app is in the background, you must be sure to declare the correct background modes, scan for the desired by service UUID, and ensure that the BLE peripheral declares the service UUID in the advertising packet rather than the scan response packet.
 
 
