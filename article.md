@@ -99,9 +99,9 @@ In other words, while the iOS device is in the foreground and Actively scanning,
 
 So, it sounds like all we need to do is put our Service UUID in the advertisement packet. Is it that easy? Almost, but not quite. The advertisement packet has a maximum length of 31 bytes. [This post](https://devzone.nordicsemi.com/f/nordic-q-a/14/what-s-the-maximum-size-for-an-advertisement-package) describes the constraints:
 
-```
-An advertising packet can be up to 31 bytes of data. Each field (i.e. appearance, name, service UUID or similar) have a header of 2 bytes (length and type), meaning that the maximum user payload is 29 bytes.
-```
+> An advertising packet can be up to 31 bytes of data. Each field (i.e. appearance, name, service UUID or similar) have a header of 2 
+> bytes (length and type), meaning that the maximum user payload is 29 bytes.
+
 So rather than just moving our Service UUID into the Advertising packet which already includes the Flags, Apperance, and Local Name, we decided to move the Service UUID into the Advertising packet and move the Local Name to the Scan Response.
 
 Once that change was made...it worked! We were now able to successfully connect to our device while our app was in the background.
