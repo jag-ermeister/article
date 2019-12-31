@@ -125,3 +125,5 @@ And here is how the Scan Response data packet looks with the Device Name:
 If you wish to discover a BLE peripheral while your app is in the background, you must be sure to declare the correct background modes, scan for the desired by service UUID, and ensure that the BLE peripheral declares the service UUID in the advertising packet rather than the scan response packet.
 
 
+- Written by Charlie Bartel and Jeremy Gustine
+
